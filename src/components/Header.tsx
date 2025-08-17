@@ -2,8 +2,23 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
+
 interface NavProps {
   $isOpen?: boolean;
+}
+
+interface NavLinkProps extends NavProps {
+  className?: string;
+}
+
+interface SocialIconsProps extends NavProps {
+  children?: React.ReactNode;
+}
+
+interface MobileActionButtonProps extends NavProps {
+  href?: string;
+  onClick?: () => void;
+  children?: React.ReactNode;
 }
 
 const HeaderContainer = styled(motion.header)<{ $isScrolled: boolean }>`
@@ -73,24 +88,23 @@ const Nav = styled.nav<NavProps>`
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.95);
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.98);
     flex-direction: column;
     justify-content: center;
     align-items: center;
     transform: ${props => (props.$isOpen ? 'translateX(0)' : 'translateX(100%)')};
-    transition: transform 0.4s ease;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 999;
-    gap: 2rem;
-    padding-top: 80px;
+    gap: 2.5rem;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
   }
 `;
 
-const NavLink = styled(motion.a).attrs({
-  whileHover: { scale: 1.05 },
-  whileTap: { scale: 0.95 }
-})`
+const NavLink = styled(motion(Link))<NavLinkProps>`
   color: #ffffff;
   text-decoration: none;
   font-family: 'Bebas Neue', sans-serif;
@@ -129,16 +143,27 @@ const NavLink = styled(motion.a).attrs({
   }
 
   @media (max-width: 1024px) {
-    font-size: 1.8rem;
-    padding: 0.5rem 0;
+    font-size: 2rem;
+    padding: 0.5rem 1rem;
+    opacity: ${props => (props.$isOpen ? 1 : 0)};
+    transform: ${props => (props.$isOpen ? 'translateY(0)' : 'translateY(20px)')};
+    transition: all 0.4s ease ${props => props.$isOpen ? '0.2s' : '0s'};
+    
+    &:nth-child(1) { transition-delay: ${props => props.$isOpen ? '0.1s' : '0s'}; }
+    &:nth-child(2) { transition-delay: ${props => props.$isOpen ? '0.15s' : '0s'}; }
+    &:nth-child(3) { transition-delay: ${props => props.$isOpen ? '0.2s' : '0s'}; }
+    &:nth-child(4) { transition-delay: ${props => props.$isOpen ? '0.25s' : '0s'}; }
+    &:nth-child(5) { transition-delay: ${props => props.$isOpen ? '0.3s' : '0s'}; }
   }
 
   @media (max-width: 480px) {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
 `;
 
-const MobileMenuButton = styled.button`
+const MobileMenuButton = styled(motion.button).attrs({
+  whileTap: { scale: 0.9 }
+})`
   background: none;
   border: none;
   color: white;
@@ -147,13 +172,21 @@ const MobileMenuButton = styled.button`
   z-index: 1001;
   display: none;
   padding: 0.5rem;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  @media (max-width: 1024px) {
-    display: block;
+  @media (min-width: 1025px) {
+    display: none;
   }
 
   @media (max-width: 480px) {
     font-size: 1.5rem;
+    width: 35px;
+    height: 35px;
   }
 `;
 
@@ -188,14 +221,28 @@ const Button = styled(motion.a).attrs({
     box-shadow: 0 6px 25px rgba(204, 0, 0, 0.5);
     transform: translateY(-3px);
   }
+`;
+
+const MobileActionButton = styled(Button)<MobileActionButtonProps>`
+  display: none;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
 
   @media (max-width: 1024px) {
-    font-size: 1.2rem;
-    padding: 1rem 2rem;
+    display: block;
+    opacity: ${props => (props.$isOpen ? 1 : 0)};
+    transform: ${props => (props.$isOpen ? 'translateY(0)' : 'translateY(20px)')};
+    transition: all 0.4s ease 0.35s;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
+    padding: 0.9rem 1.8rem;
   }
 `;
 
-const SocialIcons = styled.div`
+const SocialIcons = styled.div<SocialIconsProps>`
   display: flex;
   gap: 1rem;
 
@@ -212,9 +259,17 @@ const SocialIcons = styled.div`
 
   @media (max-width: 1024px) {
     gap: 1.5rem;
+    margin-top: 1.5rem;
     
     a {
       font-size: 1.8rem;
+      opacity: ${props => (props.$isOpen ? 1 : 0)};
+      transform: ${props => (props.$isOpen ? 'translateY(0)' : 'translateY(20px)')};
+      transition: all 0.4s ease;
+      
+      &:nth-child(1) { transition-delay: ${props => props.$isOpen ? '0.4s' : '0s'}; }
+      &:nth-child(2) { transition-delay: ${props => props.$isOpen ? '0.45s' : '0s'}; }
+      &:nth-child(3) { transition-delay: ${props => props.$isOpen ? '0.5s' : '0s'}; }
     }
   }
 
@@ -224,6 +279,29 @@ const SocialIcons = styled.div`
     a {
       font-size: 1.5rem;
     }
+  }
+`;
+
+const CloseButton = styled.div`
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  font-size: 2rem;
+  color: white;
+  cursor: pointer;
+  z-index: 1001;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #ff3333;
+    opacity: 1;
+  }
+
+  @media (max-width: 480px) {
+    top: 20px;
+    right: 20px;
+    font-size: 1.8rem;
   }
 `;
 
@@ -265,7 +343,10 @@ export default function Header() {
           <img src="/logoraff-removebg-preview.png" alt="RAFF Logo" />
         </LogoContainer>
 
-        <MobileMenuButton onClick={toggleMenu}>
+        <MobileMenuButton 
+          onClick={toggleMenu}
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        >
           {isMenuOpen ? (
             <i className="fas fa-times"></i>
           ) : (
@@ -274,24 +355,54 @@ export default function Header() {
         </MobileMenuButton>
 
         <Nav $isOpen={isMenuOpen}>
-          <NavLink as={Link} to="/" className="active" onClick={closeMenu}>
-  Inicio
-</NavLink>
+          {isMenuOpen && (
+            <CloseButton onClick={closeMenu}>
+              <i className="fas fa-times"></i>
+            </CloseButton>
+          )}
 
-          <NavLink as={Link} to="/Discografia" onClick={closeMenu}>
+          <NavLink 
+            to="/" 
+            className="active" 
+            onClick={closeMenu}
+            $isOpen={isMenuOpen}
+          >
+            Inicio
+          </NavLink>
+
+          <NavLink 
+            to="/Discografia" 
+            onClick={closeMenu}
+            $isOpen={isMenuOpen}
+          >
             Discografía
           </NavLink>
-  <NavLink as={Link} to="/video" onClick={closeMenu}>
-  Videos
-</NavLink>
-          <NavLink as={Link} to="/Tour" onClick={closeMenu}>
+          
+          <NavLink 
+            to="/video" 
+            onClick={closeMenu}
+            $isOpen={isMenuOpen}
+          >
+            Videos
+          </NavLink>
+          
+          <NavLink 
+            to="/Tour" 
+            onClick={closeMenu}
+            $isOpen={isMenuOpen}
+          >
             Tour
           </NavLink>
-          <NavLink as={Link} to="/Contacto" onClick={closeMenu}>
+          
+          <NavLink 
+            to="/Contacto" 
+            onClick={closeMenu}
+            $isOpen={isMenuOpen}
+          >
             Contacto
           </NavLink>
 
-          <SocialIcons>
+          <SocialIcons $isOpen={isMenuOpen}>
             <a href="https://instagram.com/raff.band" target="_blank" rel="noreferrer">
               <i className="fab fa-instagram"></i>
             </a>
@@ -303,7 +414,13 @@ export default function Header() {
             </a>
           </SocialIcons>
 
-        
+          <MobileActionButton 
+            href="#musica" 
+            onClick={closeMenu}
+            $isOpen={isMenuOpen}
+          >
+            Escuchar Música
+          </MobileActionButton>
         </Nav>
 
         <ActionButtons>
